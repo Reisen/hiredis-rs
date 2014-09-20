@@ -14,7 +14,7 @@ pub mod api;
 
 pub struct Reply {
     head:  bool,
-    reply: *const api::Reply
+    reply: *mut api::Reply
 }
 
 pub enum ReplyCode {
@@ -35,10 +35,17 @@ impl Reply {
      * automatically free the data when the reply goes out of scope. Note that
      * this method cannot be invoked outside of the crate.
      */
-    fn new(reply: *const api::Reply) -> Reply {
+    fn new(reply: *mut api::Reply) -> Reply {
         Reply {
             head:  true,
             reply: reply
+        }
+    }
+
+    pub fn empty() -> Reply {
+        Reply {
+            head: true,
+            reply: 0 as *mut api::Reply
         }
     }
 
@@ -50,6 +57,7 @@ impl Reply {
      * Vectors and so on.
      */
     pub fn typename(&self) -> ReplyCode {
+        println!("Accessing: {}", self.reply as uint);
         unsafe {
             match (*self.reply)._type {
                 1 => String,
@@ -93,8 +101,9 @@ impl Drop for Reply {
              * children too. This check prevents us accidentally freeing replies
              * that shouldn't be freed.
              */
-            if self.head {
-                api::freeReplyObject(transmute(self.reply))
+            if self.head &&
+               self.reply != 0 as *mut api::Reply {
+                api::freeReplyObject(self.reply as *const libc::c_void);
             }
         }
     }
@@ -143,7 +152,7 @@ impl Redis {
 
                 /* Otherwise cast the pointer to the actual struct type being
                  * returned and store it to be returned. */
-                Some(Reply::new(result as *const api::Reply))
+                Some(Reply::new(result as *mut api::Reply))
             }
         })
     }
@@ -165,12 +174,18 @@ impl Redis {
      * Attempts to read a message from the input buffer. Blocking in this
      * context depends on how the connection was created.
      */
-    pub fn receive(&self) -> Option<Reply> {
+    pub fn receive(&self, reply: &mut Reply) {
         unsafe {
-            let reply: api::Reply = std::mem::uninitialized();
-            let result            = api::redisGetReply(self.context, transmute(&reply));
+            let mut value = 3 as *mut api::Reply;
+            value = api::redisCommand(self.context, "SUBSCRIBE IRC".to_c_str().as_ptr()) as *mut api::Reply;
+            api::freeReplyObject(value as *const libc::c_void);
+            value = 4 as *mut api::Reply;
 
-            Some(Reply::new(result as *const api::Reply))
+            api::redisGetReply(self.context, &mut (value as *mut libc::c_void));
+
+            println!("Result: {}",
+                value
+            );
         }
     }
 }

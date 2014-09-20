@@ -1,3 +1,5 @@
+extern crate libc;
+
 use libc::{
     c_char,
     c_int,
@@ -91,7 +93,7 @@ extern {
     pub fn redisBufferRead(c: *const Context) -> c_int;
     pub fn redisBufferWrite(c: *const Context) -> c_int;
 
-    pub fn redisGetReply(c: *const Context, reply: *const (*const c_void)) -> c_int;
+    pub fn redisGetReply(c: *const Context, reply: *mut *mut c_void) -> c_int;
     pub fn redisGetReplyFromReader(c: *const Context, reply: *const (*const c_void)) -> c_int;
     pub fn redisAppendFormattedCommand(c: *const Context, cmd: *const c_char, len: size_t) -> c_int;
 
@@ -104,4 +106,20 @@ extern {
     pub fn redisvCommand(c: *const Context, format: *const c_char, ap: *const c_void) -> *const c_void;
     pub fn redisCommand(c: *const Context, format: *const c_char, ...) -> *const c_void;
     pub fn redisCommandArgv(c: *const Context, argc: c_int, argv: *const (*const c_char), argvlen: *const size_t) -> *const c_void;
+}
+
+#[test]
+pub fn test1() {
+    unsafe {
+        let context = redisConnect("127.0.0.1".to_c_str().as_ptr(), 6379);
+        let mut reply = 0 as *mut Reply;
+        reply = redisCommand(context, "SUBSCRIBE IRC".to_c_str().as_ptr()) as *mut Reply;
+        freeReplyObject(reply as *const c_void);
+        reply = 4 as *mut Reply;
+
+        while redisGetReply(context, &mut (reply as *mut c_void)) == 0 {
+            println!("Value: {}, Type: {}", reply, (*reply)._type);
+            freeReplyObject(reply as *const c_void);
+        }
+    }
 }
