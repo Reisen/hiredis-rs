@@ -65,6 +65,15 @@ impl Redis {
             }
         })
     }
+
+    pub fn receive(&self) -> Option<Reply> {
+        unsafe {
+            let reply: Reply = std::mem::uninitialized();
+            let result       = api::redisGetReply(self.context, transmute(&reply));
+
+            Some(reply)
+        }
+    }
 }
 
 impl Drop for Redis {
