@@ -6,23 +6,14 @@ use libc::{
     size_t
 };
 
-pub enum ReplyCode {
-    String,
-    Array,
-    Integer,
-    Nil,
-    Status,
-    Error
-}
-
 #[repr(C)]
 pub struct Reply {
-    _type:    c_int,
-    integer:  c_longlong,
-    len:      c_int,
-    _str:     *const c_char,
-    elements: size_t,
-    element:  *const (*const Reply)
+    pub _type:    c_int,
+    pub integer:  c_longlong,
+    pub len:      c_int,
+    pub _str:     *const c_char,
+    pub elements: size_t,
+    pub element:  *const (*const Reply)
 }
 
 #[repr(C)]

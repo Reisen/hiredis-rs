@@ -16,10 +16,34 @@ pub struct Reply {
     reply: *const api::Reply
 }
 
+pub enum ReplyCode {
+    String = 1,
+    Array,
+    Integer,
+    Nil,
+    Status,
+    Error,
+    Unknown
+}
+
 impl Reply {
     unsafe fn new(reply: *const api::Reply) -> Reply {
         Reply {
             reply: reply
+        }
+    }
+
+    fn typename(&self) -> ReplyCode {
+        unsafe {
+            match (*self.reply)._type {
+                1 => String,
+                2 => Array,
+                3 => Integer,
+                4 => Nil,
+                5 => Status,
+                6 => Error,
+                _ => Unknown
+            }
         }
     }
 }
