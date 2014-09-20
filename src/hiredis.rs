@@ -24,6 +24,14 @@ impl Reply {
     }
 }
 
+impl Drop for Reply {
+    fn drop(&mut self) {
+        unsafe {
+            api::freeReplyObject(transmute(self.reply))
+        }
+    }
+}
+
 pub struct Redis {
     context: *const api::Context
 }
