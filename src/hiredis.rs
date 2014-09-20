@@ -33,7 +33,7 @@ impl Reply {
         }
     }
 
-    fn typename(&self) -> ReplyCode {
+    pub fn typename(&self) -> ReplyCode {
         unsafe {
             match (*self.reply)._type {
                 1 => String,
