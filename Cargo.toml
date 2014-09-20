@@ -1,0 +1,8 @@
+[package]
+
+name = "hiredis"
+version = "0.0.1"
+authors = ["Reisen <reisen@morphism.org>"]
+
+[lib]
+name = "hiredis"
