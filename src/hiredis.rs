@@ -49,40 +49,43 @@ impl Reply {
      * TODO: Create a nicer wrapper enum that encodes the data directly with
      * Vectors and so on.
      */
-    pub fn typename(&self) -> ReplyCode {
+    pub fn typename(&self) -> uint {
         unsafe {
-            match (*self.reply)._type {
-                1 => String,
-                2 => Array,
-                3 => Integer,
-                4 => Nil,
-                5 => Status,
-                6 => Error,
-                v => {
-                    println!("Unknown Error: {}", v);
-                    Unknown
-                }
-            }
+            //match (*self.reply)._type {
+            //    1 => String,
+            //    2 => Array,
+            //    3 => Integer,
+            //    4 => Nil,
+            //    5 => Status,
+            //    6 => Error,
+            //    v => {
+            //        println!("Unknown Error: {}", v);
+            //        Unknown
+            //    }
+            //}
         }
+
+        unsafe { (*self.reply)._type as uint }
     }
 
     pub fn string<'r>(&'r self) -> Option<&'r [u8]> {
-        match self.typename() {
-            String => {
-                unsafe {
-                    let data = std::c_vec::CVec::new(
-                        (*self.reply)._str as *mut u8,
-                        (*self.reply).len as uint
-                    ).as_mut_slice() as *mut [u8];
+        None
+        //match self.typename() {
+        //    String => {
+        //        unsafe {
+        //            let data = std::c_vec::CVec::new(
+        //                (*self.reply)._str as *mut u8,
+        //                (*self.reply).len as uint
+        //            ).as_mut_slice() as *mut [u8];
 
-                    Some(&*data)
-                }
-            }
+        //            Some(&*data)
+        //        }
+        //    }
 
-            _ => {
-                None
-            }
-        }
+        //    _ => {
+        //        None
+        //    }
+        //}
     }
 }
 
