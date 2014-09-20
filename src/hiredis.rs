@@ -48,14 +48,14 @@ impl Redis {
 
                 /* Fail if the command errored for some reason. */
                 if result == 0 as *const ::libc::c_void {
-                    None
+                    return None;
                 }
 
                 /* Otherwise transmute the void pointer memory into a pointer
                  * to a reply structure and return it. */
                 Some(Reply::new(transmute(result)))
             }
-        }
+        })
     }
 }
 
