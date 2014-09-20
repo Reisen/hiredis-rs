@@ -24,7 +24,7 @@ pub enum ReplyCode {
     Nil,
     Status,
     Error,
-    Unknown(int)
+    Unknown
 }
 
 impl Reply {
@@ -58,7 +58,10 @@ impl Reply {
                 4 => Nil,
                 5 => Status,
                 6 => Error,
-                x => Unknown(x)
+                v => {
+                    println!("Unknown Error: {}", v);
+                    Unknown
+                }
             }
         }
     }
