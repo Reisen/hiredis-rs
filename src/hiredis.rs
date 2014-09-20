@@ -167,10 +167,10 @@ impl Redis {
      */
     pub fn receive(&self) -> Option<Reply> {
         unsafe {
-            let reply: Reply = std::mem::uninitialized();
-            let result       = api::redisGetReply(self.context, transmute(&reply));
+            let reply: api::Reply = std::mem::uninitialized();
+            let result            = api::redisGetReply(self.context, transmute(&reply));
 
-            Some(reply)
+            Some(Reply::new(result as *const api::Reply))
         }
     }
 }
