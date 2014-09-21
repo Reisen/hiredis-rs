@@ -107,19 +107,3 @@ extern {
     pub fn redisCommand(c: *const Context, format: *const c_char, ...) -> *const c_void;
     pub fn redisCommandArgv(c: *const Context, argc: c_int, argv: *const (*const c_char), argvlen: *const size_t) -> *const c_void;
 }
-
-#[test]
-pub fn test1() {
-    unsafe {
-        let context = redisConnect("127.0.0.1".to_c_str().as_ptr(), 6379);
-        let mut reply = 0 as *mut Reply;
-        reply = redisCommand(context, "SUBSCRIBE IRC".to_c_str().as_ptr()) as *mut Reply;
-        freeReplyObject(reply as *const c_void);
-        reply = 4 as *mut Reply;
-
-        while redisGetReply(context, &mut (reply as *mut c_void)) == 0 {
-            println!("Value: {}, Type: {}", reply, (*reply)._type);
-            freeReplyObject(reply as *const c_void);
-        }
-    }
-}

@@ -176,16 +176,14 @@ impl Redis {
      */
     pub fn receive(&self, reply: &mut Reply) {
         unsafe {
-            let mut value = 3 as *mut api::Reply;
-            value = api::redisCommand(self.context, "SUBSCRIBE IRC".to_c_str().as_ptr()) as *mut api::Reply;
-            api::freeReplyObject(value as *const libc::c_void);
-            value = 4 as *mut api::Reply;
+            /* If there's already a reply allocated, clean it out early so it
+             * can be re-used. */
+            if reply.reply != 0 as *mut api::Reply {
+                api::freeReplyObject(reply.reply as *const libc::c_void);
+                reply.reply = 0 as *mut api::Reply;
+            }
 
-            api::redisGetReply(self.context, &mut (value as *mut libc::c_void));
-
-            println!("Result: {}",
-                value
-            );
+            api::redisGetReply(self.context, (&mut reply.reply) as *mut _ as *mut *mut libc::c_void);
         }
     }
 }
