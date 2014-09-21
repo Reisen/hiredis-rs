@@ -183,7 +183,10 @@ impl Redis {
                 reply.reply = 0 as *mut api::Reply;
             }
 
-            api::redisGetReply(self.context, (&mut reply.reply) as *mut _ as *mut *mut libc::c_void);
+            api::redisGetReply(
+                self.context,
+                (&mut reply.reply) as *mut _ as *mut *mut libc::c_void
+            );
         }
     }
 }
