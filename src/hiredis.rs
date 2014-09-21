@@ -1,13 +1,12 @@
 #![crate_name = "hiredis"]
 #![crate_type = "lib"]
 #![feature(globs)]
+#![feature(tuple_indexing)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
 extern crate libc;
-
-use std::mem::transmute;
 
 pub mod api;
 
@@ -57,7 +56,6 @@ impl Reply {
      * Vectors and so on.
      */
     pub fn typename(&self) -> ReplyCode {
-        println!("Accessing: {}", self.reply as uint);
         unsafe {
             match (*self.reply)._type {
                 1 => String,
@@ -86,6 +84,36 @@ impl Reply {
 
             _ => {
                 None
+            }
+        }
+    }
+
+    pub fn array<'r>(&'r self) -> Vec<Reply> {
+        match self.typename() {
+            Array => {
+                unsafe {
+                    /* There is some serious lifetime casting bullshit going on
+                     * here, sorry to anyone reading this. */
+                    let data = std::c_vec::CVec::new(
+                        (*self.reply).element as *mut &'r mut api::Reply,
+                        (*self.reply).elements as uint
+                    ).as_mut_slice() as *mut [&'r mut api::Reply];
+
+                    let mut result = Vec::new();
+
+                    for v in (&mut *data).iter_mut() {
+                        result.push(Reply {
+                            head:  false,
+                            reply: *v
+                        });
+                    }
+
+                    result
+                }
+            }
+
+            _ => {
+                Vec::new()
             }
         }
     }
